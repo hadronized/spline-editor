@@ -1,0 +1,13 @@
+[package]
+name = "spline-editor"
+version = "0.1.0"
+authors = ["Dimitri Sabadie <dimitri.sabadie@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+luminance = "0.35"
+luminance-derive = "0.3"
+luminance-glfw = "0.9"
+splines = "1.0.0-rc.3"
