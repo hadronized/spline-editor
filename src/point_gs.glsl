@@ -6,7 +6,7 @@ out vec2 g_point;
 out float g_radius;
 
 void main() {
-  float r = 0.05; // radius
+  float r = 0.025; // radius
   float r2 = r * .5;
   vec2 p = gl_in[0].gl_Position.xy;
 
