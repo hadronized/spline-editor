@@ -16,9 +16,8 @@ pub enum Semantics {
 
 #[derive(Clone, Debug, Vertex)]
 #[vertex(sem = "Semantics")]
-struct Vertex {
-  position: VPos
-}
+#[repr(C)]
+struct Vertex(VPos);
 
 const DELTA_T: f32 = 0.01;
 
@@ -35,14 +34,14 @@ fn build_tess<C>(ctx: &mut C, spline: &Spline<f32, f32>, mode: Mode) -> Result<T
 
     if let Mode::Point = mode {
       for cp in keys {
-        vertices.push(Vertex { position: VPos::new([cp.t, cp.value]) });
+        vertices.push(Vertex::new(VPos::new([cp.t, cp.value])));
       }
     } else {
       let up_t = keys.last().unwrap().t;
       let mut t = keys[0].t;
 
       while t <= up_t {
-        vertices.push(Vertex { position: VPos::new([t, spline.clamped_sample(t).unwrap()]) });
+        vertices.push(Vertex::new(VPos::new([t, spline.clamped_sample(t).unwrap()])));
         t += DELTA_T;
       }
     }
@@ -72,8 +71,12 @@ fn main() {
   let mut tess_curve = build_tess(&mut surface, &spline, Mode::LineStrip).unwrap();
   let mut tess_points = build_tess(&mut surface, &spline, Mode::Point).unwrap();
 
-  let (point_program, _) = Program::<Semantics, (), ()>::from_strings(None, VS_SRC, POINT_GS_SRC, POINT_FS_SRC).expect("shader program");
-  let (line_program, _) = Program::<Semantics, (), ()>::from_strings(None, VS_SRC, None, LINE_FS_SRC).expect("shader program");
+  let point_program = Program::<Semantics, (), ()>::from_strings(None, VS_SRC, POINT_GS_SRC, POINT_FS_SRC)
+    .expect("shader program")
+    .ignore_warnings();
+  let line_program = Program::<Semantics, (), ()>::from_strings(None, VS_SRC, None, LINE_FS_SRC)
+    .expect("shader program")
+    .ignore_warnings();
 
   'app: loop {
     let [viewport_w, viewport_h] = surface.size();

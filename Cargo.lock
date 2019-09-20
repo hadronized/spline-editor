@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "luminance"
-version = "0.35.1"
+version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gl 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -89,30 +89,31 @@ dependencies = [
 
 [[package]]
 name = "luminance-derive"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
+ "proc-macro2 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "luminance-glfw"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gl 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glfw 0.31.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance 0.35.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance-windowing 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance-windowing 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "luminance-windowing"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "luminance 0.35.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -148,9 +149,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "spline-editor"
 version = "0.1.0"
 dependencies = [
- "luminance 0.35.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance-glfw 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance-derive 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance-glfw 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "splines 1.0.0-rc.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -191,10 +192,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum khronos_api 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 "checksum libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)" = "34fcd2c08d2f832f376f4173a231990fa5aef4e99fb569867318a227ef4c06ba"
 "checksum log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)" = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
-"checksum luminance 0.35.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3f938822e828c64ccdb53b8040078218aced388efa25442c029e76e698cdb7ca"
-"checksum luminance-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9c3646a275651ab6869b6437d039ccf23d5fabf2acca013d9a7a7e24b365e5b5"
-"checksum luminance-glfw 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5fa35cbf192dde4ba46905ad8c2d2d15a768431578e4ef5826166dd581dd231f"
-"checksum luminance-windowing 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b4b94cc369d06ab7315f53886846d2f9e366219442248e2aa6ca38f27f13f14f"
+"checksum luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3e6072770d112a31e79948f01525f69d55950734d42ffab01be9ec9a5bdb7625"
+"checksum luminance-derive 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b9c45df16a71d409b870f2ddf1c224f741d5ec3141d91101ead3dc450097e52a"
+"checksum luminance-glfw 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "84c6ca2b04d653e421da223c7dc4e2bd8e21c2a70697eb01a32c75afab0eca3b"
+"checksum luminance-windowing 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "924bcb3924bb2b30240fb4c569c445353365096e5351ee6965bfbe728fa315d3"
 "checksum proc-macro2 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "e98a83a9f9b331f54b924e68a66acb1bb35cb01fb0a23645139967abefb697e8"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
