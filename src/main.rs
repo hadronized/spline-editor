@@ -1,3 +1,6 @@
+// This is currently a prototype. The current code is pretty naive, especially in terms of
+// allocation of keys in splines. Some  work must be done to clean all that stuff.
+
 use luminance::blending::{Equation, Factor};
 use luminance::context::GraphicsContext;
 use luminance::depth_test::DepthTest;
