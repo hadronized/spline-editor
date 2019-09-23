@@ -7,7 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cgmath = "0.17"
 luminance = "0.36"
 luminance-derive = "0.4"
 luminance-glfw = "0.10"
-splines = "1.0.0-rc.3"
+splines = { version = "1", features = ["impl-cgmath", "bezier"] }
+
+[patch.crates-io]
+splines = { path = "../splines" }
