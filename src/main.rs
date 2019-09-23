@@ -91,8 +91,11 @@ const POINT_VS_SRC: &str = include_str!("point_vs.glsl");
 const POINT_GS_SRC: &str = include_str!("point_gs.glsl");
 const POINT_FS_SRC: &str = include_str!("point_fs.glsl");
 
+const WINDOW_WIDTH: u32 = 800;
+const WINDOW_HEIGHT: u32 = 800;
+
 fn main() {
-  let mut surface = GlfwSurface::new(WindowDim::Windowed(800, 800), "spline editor", WindowOpt::default())
+  let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "spline editor", WindowOpt::default())
     .expect("create surface");
 
   // the actual spline
@@ -114,7 +117,6 @@ fn main() {
     .ignore_warnings();
 
   'app: loop {
-    let [viewport_w, viewport_h] = surface.size();
     let mut rebuild_tess = false;
 
     // event handling
@@ -122,8 +124,13 @@ fn main() {
       match event {
         WindowEvent::Close | WindowEvent::Key(GKey::Escape, _, Action::Release, _) => break 'app,
 
+        WindowEvent::FramebufferSize(w, h) => {
+          println!("new framebuffer dimensions: {}×{}", w, h);
+        }
+
         WindowEvent::CursorPos(x, y) => {
-          cursor_pos = Some([x as f32 / viewport_w as f32, 1. - 2. * y as f32 / viewport_h as f32]);
+          cursor_pos = Some([x as f32 / WINDOW_WIDTH as f32, 1. - 2. * y as f32 / WINDOW_HEIGHT as f32]);
+          println!("cursor pos: ({}, {}) -> {:?}", x, y, cursor_pos);
         }
 
         WindowEvent::MouseButton(MouseButton::Button1, Action::Release, _) => {
@@ -181,7 +188,7 @@ fn main() {
             keys.swap_remove(i);
             spline = Spline::from_vec(keys);
 
-            selected_point =None;
+            selected_point = None;
             rebuild_tess = true;
           }
         }
