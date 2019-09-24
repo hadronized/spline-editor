@@ -11,7 +11,4 @@ cgmath = "0.17"
 luminance = "0.36"
 luminance-derive = "0.4"
 luminance-glfw = "0.10"
-splines = { version = "1", features = ["impl-cgmath", "bezier"] }
-
-[patch.crates-io]
-splines = { path = "../splines" }
+splines = { version = "2", features = ["impl-cgmath"] }
