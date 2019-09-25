@@ -12,6 +12,9 @@ use luminance_derive::{Semantics, Vertex};
 use luminance_glfw::{Action, GlfwSurface, Key as GKey, MouseButton, Surface, WindowDim, WindowEvent, WindowOpt};
 use splines::{Interpolation, Key, Spline};
 
+mod editor;
+mod vertex;
+
 #[derive(Copy, Clone, Debug, Semantics)]
 pub enum Semantics {
   #[sem(name = "position", repr = "[f32; 2]", wrapper = "VPos")]
