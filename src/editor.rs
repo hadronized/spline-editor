@@ -1,7 +1,7 @@
 use cgmath::Vector2;
 use luminance::context::GraphicsContext;
 use luminance::tess::{Mode, Tess, TessError, TessBuilder};
-use splines::{Interpolation, Spline};
+use splines::{Interpolation, Key, Spline};
 
 use crate::vertex::{LineVertex, VColor, VRadius, VPos, PointVertex};
 
@@ -52,7 +52,7 @@ impl Editor {
   }
 
   /// Rebuild tessellation based on control points for points.
-  fn build_points<C>(&mut self, ctx: &mut C, ) -> Result<(), EditorError> where C: GraphicsContext {
+  fn build_points<C>(&mut self, ctx: &mut C) -> Result<(), EditorError> where C: GraphicsContext {
     let mut vertices = Vec::new();
     let keys = self.spline.keys();
 
@@ -66,7 +66,7 @@ impl Editor {
           VRadius::new(0.025 / 2.),
         );
 
-        if let Some(Selection::Point(i_sel)) = self.selection {
+        if let Some(Selection::Key(i_sel)) = self.selection {
           if i_sel == i {
             vertex.1 = VColor::new([1., 0.5, 0.5]);
             vertex.2 = VRadius::new(0.025 / 2.);
@@ -106,21 +106,26 @@ impl Editor {
   }
 
   /// Rebuild tessellation.
-  fn rebuild_tess(&mut self) -> Result<(), EditorError> {
-    self.build_points(&mut surface, &spline, selected_point).expect("control point re-tessellation")?;
-    self.build_lines(&mut surface, &spline).expect("control point re-tessellation")
+  fn rebuild_tess<C>(
+    &mut self,
+    surface: &mut C
+  ) -> Result<(), EditorError>
+    where
+      C: GraphicsContext {
+    self.build_points(surface)?;
+    self.build_lines(surface)
   }
 
   /// Move a point.
-  fn move_key(&mut self, key: usize, p: ScreenPos) -> Result<(), EditorError> {
-    let key = self.spline.get_mut(i).ok_or_else(|| EditorError::UnknownKey(key))?;
+  fn move_key(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
+    let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
     *key.value = p;
     Ok(())
   }
 
   /// Move a handle of a point.
   fn move_handle(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
-    let key = self.spline.get_mut(i).ok_or_else(|| EditorError::UnknownKey(index))?;
+    let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
 
     if let Interpolation::Bezier(ref mut handle) = *key.interpolation {
       *handle = p;
@@ -138,14 +143,13 @@ impl Editor {
   }
 
   /// Remove a point.
-  fn remove_point(&mut self, index: usize) -> Result<(), EditorError> {
-    self.spline.keys.remove(index).map_err(|_| EditorError::UnknownKey(index))
+  fn remove_point(&mut self, index: usize) -> Result<Key<f32, ScreenPos>, EditorError> {
+    self.spline.remove(index).ok_or_else(|| EditorError::UnknownKey(index))
   }
 
   /// Try to select some content at the given position. The selected content is returned if any.
   fn select(&mut self, cursor_pos: ScreenPos) -> Option<Selection> {
-    let [x, y] = cursor_pos.into();
-    let [x, y] = [x as f32, y as f32];
+    let [x, y]: [f32; 2] = cursor_pos.into();
     let mut found = None;
 
     // we want to select a point; check if any is nearby
@@ -178,7 +182,7 @@ impl Editor {
             }
 
             None => {
-              found = Some((Selection::Handle(i, Handle::Own), dist));
+              found = Some((Selection::Handle(i, HandleSelection::Own), dist));
             }
 
             _ => ()
@@ -202,15 +206,18 @@ impl Editor {
     });
 
     self.rebuild_tess = true;
+
+    self.selection
   }
 
   /// Toggle the interpolation of a key to something else.
   fn toggle_interpolation(&mut self, index: usize) -> Result<(), EditorError> {
-    let key = self.spline.get_mut(index)?;
+    let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
     let prev = *key.interpolation;
     *key.interpolation = Self::cycle_interpolation(*key.value, prev);
 
     println!("toggling interpolation for key {}; {:?} -> {:?}", index, prev, key.interpolation);
+    Ok(())
   }
 
   /// Switch interpolation back and forth between modes.
