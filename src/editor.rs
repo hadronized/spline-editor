@@ -9,10 +9,10 @@ const DELTA_T: f32 = 0.01;
 const POINT_SELECTION_DIST: f32 = DELTA_T * 8.;
 
 /// Position on screen.
-type ScreenPos = Vector2<f32>;
+pub type ScreenPos = Vector2<f32>;
 
 /// Editor object.
-struct Editor {
+pub struct Editor {
   // The actual spline the user is editing.
   spline: Spline<f32, ScreenPos>,
   // Currently selected content.
@@ -26,6 +26,17 @@ struct Editor {
 }
 
 impl Editor {
+  /// Create a default editor.
+  pub fn new<C>(ctx: &mut C) -> Self where C: GraphicsContext {
+    let spline = Spline::from_vec(Vec::new());
+    let selection = None;
+    let points = TessBuilder::new(ctx).set_vertex_nb(1).build().unwrap();
+    let lines = TessBuilder::new(ctx).set_vertex_nb(1).build().unwrap();
+    let rebuild_tess = false;
+
+    Editor { spline, selection, points, lines, rebuild_tess }
+  }
+
   /// Rebuild tessellation based on control points for lines.
   fn build_lines<C>(&mut self, ctx: &mut C) -> Result<(), EditorError> where C: GraphicsContext {
     let mut vertices = Vec::new();
@@ -35,10 +46,27 @@ impl Editor {
       let up_t = keys.last().unwrap().t;
       let mut t = keys[0].t;
 
-      while t <= up_t {
+      // compute the delta we need to increment when sampling; basically, if we want a point every
+      // 0.01 units, sampling with Δ = 0.01 for a straight segment with len = 1, we we’ll get what
+      // we want; if do the same for a straight segment with len = 2, it’s like sampling at 0.02. So
+      // we must divide the length by the delta
+      let len = up_t - t;
+      let delta_t = DELTA_T / len;
+
+      let mut i = 0;
+      while t < up_t {
         let p = self.spline.clamped_sample(t).unwrap();
+        println!("sampled {:?}", p);
         vertices.push(LineVertex::new(VPos::new(p.into())));
-        t += DELTA_T;
+        t += delta_t;
+        i += 1;
+      }
+
+      println!("number segments: {}", i);
+
+      // add the last key
+      if let Some(key) = self.spline.keys().last() {
+        vertices.push(LineVertex::new(VPos::new(key.value.into())));
       }
     }
 
@@ -105,30 +133,40 @@ impl Editor {
     Ok(())
   }
 
-  /// Rebuild tessellation.
-  fn rebuild_tess<C>(
+  /// Rebuild tessellation if needed.
+  pub fn rebuild_tess_if_needed<C>(
     &mut self,
     surface: &mut C
   ) -> Result<(), EditorError>
     where
       C: GraphicsContext {
-    self.build_points(surface)?;
-    self.build_lines(surface)
+    if self.rebuild_tess {
+      self.rebuild_tess = false;
+      self.build_points(surface)?;
+      self.build_lines(surface)?;
+    }
+
+    Ok(())
   }
 
   /// Move a point.
-  fn move_key(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
+  pub fn move_key(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
     let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
+
     *key.value = p;
+    self.rebuild_tess = true;
+
     Ok(())
   }
 
   /// Move a handle of a point.
-  fn move_handle(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
+  pub fn move_handle(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
     let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
 
     if let Interpolation::Bezier(ref mut handle) = *key.interpolation {
       *handle = p;
+      self.rebuild_tess = true;
+
       Ok(())
     } else {
       Err(EditorError::WrongInterpolationAssumed(index))
@@ -136,19 +174,44 @@ impl Editor {
   }
 
   /// Add a new point.
-  fn add_point(&mut self, p: ScreenPos, interpolation: Interpolation<f32, ScreenPos>) {
+  pub fn add_point(&mut self, p: ScreenPos, interpolation: Interpolation<f32, ScreenPos>) {
     self.selection = None;
     self.spline.add(Key::new(p[0], p, interpolation));
     self.rebuild_tess = true;
   }
 
   /// Remove a point.
-  fn remove_point(&mut self, index: usize) -> Result<Key<f32, ScreenPos>, EditorError> {
-    self.spline.remove(index).ok_or_else(|| EditorError::UnknownKey(index))
+  pub fn remove_point(&mut self, index: usize) -> Result<Key<f32, ScreenPos>, EditorError> {
+    let r = self.spline.remove(index).ok_or_else(|| EditorError::UnknownKey(index))?;
+    self.rebuild_tess = true;
+    self.selection = None;
+
+    Ok(r)
+  }
+
+  /// Check if there’s a selection.
+  pub fn is_selecting(&self) -> bool {
+    self.selection.is_some()
+  }
+
+  /// Get the currently selected point, if any.
+  pub fn selected_point(&self) -> Option<usize> {
+    self.selection.and_then(|s|
+      if let Selection::Key(i) = s {
+        Some(i)
+      } else {
+        None
+      }
+    )
+  }
+
+  /// Currently selected content.
+  pub fn selection(&self) -> &Option<Selection> {
+    &self.selection
   }
 
   /// Try to select some content at the given position. The selected content is returned if any.
-  fn select(&mut self, cursor_pos: ScreenPos) -> Option<Selection> {
+  pub fn select(&mut self, cursor_pos: ScreenPos) -> Option<Selection> {
     let [x, y]: [f32; 2] = cursor_pos.into();
     let mut found = None;
 
@@ -211,10 +274,12 @@ impl Editor {
   }
 
   /// Toggle the interpolation of a key to something else.
-  fn toggle_interpolation(&mut self, index: usize) -> Result<(), EditorError> {
+  pub fn toggle_interpolation(&mut self, index: usize) -> Result<(), EditorError> {
     let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
     let prev = *key.interpolation;
     *key.interpolation = Self::cycle_interpolation(*key.value, prev);
+
+    self.rebuild_tess = true;
 
     println!("toggling interpolation for key {}; {:?} -> {:?}", index, prev, key.interpolation);
     Ok(())
@@ -230,16 +295,27 @@ impl Editor {
       _ => i
     }
   }
+
+  /// Get the underlying point tessellation.
+  pub fn points(&self) -> &Tess {
+    &self.points
+  }
+
+  /// Get the underlying line tessellation.
+  pub fn lines(&self) -> &Tess {
+    &self.lines
+  }
 }
 
 /// Possible errors that might occur while using the editor.
+#[derive(Debug)]
 pub enum EditorError {
   /// Unknown key index (i.e. likely out of bounds).
   UnknownKey(usize),
-  /// Interpolation assumed is not the one the key is having.
-  WrongInterpolationAssumed(usize),
   /// Error while rebuilding tessellation.
   TessError(TessError),
+  /// Wrong interpolation assumed (typical for Bézier).
+  WrongInterpolationAssumed(usize),
 }
 
 /// A selection. It can either be a control point (Key) or a handle for a Bézier curve. In case
