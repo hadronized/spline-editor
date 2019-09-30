@@ -301,12 +301,12 @@ dependencies = [
  "luminance 0.37.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "luminance-derive 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "luminance-glfw 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "splines 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "splines 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "splines"
-version = "2.0.1"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cgmath 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -388,7 +388,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rdrand 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-"checksum splines 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "470758320a7ed5e7da096f2395f654e7a673d437d53c3cd4e132aa9f4e537d05"
+"checksum splines 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "cd46743d6bb5b9ddf8632b843c83952e0c80b7766562a3814f6b68f71a0ca496"
 "checksum syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "66850e97125af79138385e9b88339cbcd037e3f28ceab8c5ad98e64f0f1f80bf"
 "checksum unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 "checksum winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "8093091eeb260906a183e6ae1abdba2ef5ef2257a21801128899c3fc699229c6"

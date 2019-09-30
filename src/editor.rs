@@ -46,19 +46,18 @@ impl Editor {
       let up_t = keys.last().unwrap().t;
       let mut t = keys[0].t;
 
-      // compute the delta we need to increment when sampling; basically, if we want a point every
-      // 0.01 units, sampling with Δ = 0.01 for a straight segment with len = 1, we we’ll get what
-      // we want; if do the same for a straight segment with len = 2, it’s like sampling at 0.02. So
-      // we must divide the length by the delta
-      let len = up_t - t;
-      let delta_t = DELTA_T / len;
-
       let mut i = 0;
       while t < up_t {
-        let p = self.spline.clamped_sample(t).unwrap();
-        println!("sampled {:?}", p);
+        let (mut p, key, _) = self.spline.clamped_sample_with_key(t).unwrap();
+
+        if let Interpolation::Bezier(_) = key.interpolation {
+        } else {
+          // this is needed to “see” the actual line being held
+          p.x = t;
+        }
+
         vertices.push(LineVertex::new(VPos::new(p.into())));
-        t += delta_t;
+        t += DELTA_T;
         i += 1;
       }
 
@@ -151,9 +150,9 @@ impl Editor {
 
   /// Move a point.
   pub fn move_key(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
-    let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
+    let key = self.spline.remove(index).ok_or_else(|| EditorError::UnknownKey(index))?;
 
-    *key.value = p;
+    self.spline.add(Key::new(p[0], p, key.interpolation));
     self.rebuild_tess = true;
 
     Ok(())
