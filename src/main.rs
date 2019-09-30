@@ -6,7 +6,6 @@ mod vertex;
 
 use luminance::blending::{Equation, Factor};
 use luminance::context::GraphicsContext;
-use luminance::depth_test::DepthTest;
 use luminance::render_state::RenderState;
 use luminance::shader::program::Program;
 use luminance_glfw::{Action, GlfwSurface, Key as GKey, MouseButton, Surface, WindowDim, WindowEvent, WindowOpt};
@@ -115,7 +114,7 @@ fn main() {
     let back_buffer = surface.back_buffer().unwrap();
     let render_state = RenderState::default()
       .set_blending(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)))
-      .set_depth_test(DepthTest::Off);
+      .set_depth_test(None);
 
     surface.pipeline_builder().pipeline(&back_buffer, [0., 0., 0., 0.], |_, mut shd_gate| {
       // lines
