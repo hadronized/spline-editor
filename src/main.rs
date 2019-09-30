@@ -84,7 +84,6 @@ fn main() {
 
           mouse_left_pressed = false;
           cursor_pressed_pos = None;
-
         }
 
         WindowEvent::MouseButton(MouseButton::Button1, Action::Press, _) => {

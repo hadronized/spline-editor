@@ -61,8 +61,6 @@ impl Editor {
         i += 1;
       }
 
-      println!("number segments: {}", i);
-
       // add the last key
       if let Some(key) = self.spline.keys().last() {
         vertices.push(LineVertex::new(VPos::new(key.value.into())));
