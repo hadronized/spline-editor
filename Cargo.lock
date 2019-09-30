@@ -117,7 +117,7 @@ dependencies = [
 
 [[package]]
 name = "luminance"
-version = "0.36.1"
+version = "0.37.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gl 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -125,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "luminance-derive"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro2 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -135,21 +135,21 @@ dependencies = [
 
 [[package]]
 name = "luminance-glfw"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "gl 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glfw 0.31.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance-windowing 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance 0.37.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance-windowing 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "luminance-windowing"
-version = "0.7.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance 0.37.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -298,15 +298,15 @@ name = "spline-editor"
 version = "0.1.0"
 dependencies = [
  "cgmath 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance-derive 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "luminance-glfw 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "splines 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance 0.37.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance-derive 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "luminance-glfw 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "splines 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "splines"
-version = "2.0.1"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cgmath 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -368,10 +368,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum khronos_api 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 "checksum libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)" = "34fcd2c08d2f832f376f4173a231990fa5aef4e99fb569867318a227ef4c06ba"
 "checksum log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)" = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
-"checksum luminance 0.36.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3e6072770d112a31e79948f01525f69d55950734d42ffab01be9ec9a5bdb7625"
-"checksum luminance-derive 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b9c45df16a71d409b870f2ddf1c224f741d5ec3141d91101ead3dc450097e52a"
-"checksum luminance-glfw 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "84c6ca2b04d653e421da223c7dc4e2bd8e21c2a70697eb01a32c75afab0eca3b"
-"checksum luminance-windowing 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "924bcb3924bb2b30240fb4c569c445353365096e5351ee6965bfbe728fa315d3"
+"checksum luminance 0.37.1 (registry+https://github.com/rust-lang/crates.io-index)" = "bce654a86b50bb9fda99895b1a27e5c72ec23b16b248f464f5ffbb2f9f918eb4"
+"checksum luminance-derive 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e3a34953b545962e824bbd79143739593570170d3cee29f468574164c8223171"
+"checksum luminance-glfw 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8884e69b5ff0f289cc8a10fc2274cd66d7319b7aee34bf6fdcfaebf983bfdda3"
+"checksum luminance-windowing 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "57f9cc14b7649a1e202cd2ecc39f2ec5b8b10cf073207502b9f8265d1b6db4ca"
 "checksum num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "6ba9a427cfca2be13aa6f6403b0b7e7368fe982bfa16fccc450ce74c46cd9b32"
 "checksum proc-macro2 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "afdc77cc74ec70ed262262942ebb7dac3d479e9e5cfa2da1841c0806f6cdabcc"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
@@ -388,7 +388,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rdrand 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-"checksum splines 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "470758320a7ed5e7da096f2395f654e7a673d437d53c3cd4e132aa9f4e537d05"
+"checksum splines 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "cd46743d6bb5b9ddf8632b843c83952e0c80b7766562a3814f6b68f71a0ca496"
 "checksum syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "66850e97125af79138385e9b88339cbcd037e3f28ceab8c5ad98e64f0f1f80bf"
 "checksum unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 "checksum winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "8093091eeb260906a183e6ae1abdba2ef5ef2257a21801128899c3fc699229c6"

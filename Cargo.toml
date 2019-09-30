@@ -4,11 +4,9 @@ version = "0.1.0"
 authors = ["Dimitri Sabadie <dimitri.sabadie@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 cgmath = "0.17"
-luminance = "0.36"
-luminance-derive = "0.4"
-luminance-glfw = "0.10"
+luminance = "0.37"
+luminance-derive = "0.5"
+luminance-glfw = "0.11"
 splines = { version = "2", features = ["impl-cgmath"] }
