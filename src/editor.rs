@@ -272,6 +272,12 @@ impl Editor {
     self.selection
   }
 
+  /// Deselect, if anything was selected.
+  pub fn deselect(&mut self) {
+    self.selection = None;
+    self.rebuild_tess = true;
+  }
+
   /// Toggle the interpolation of a key to something else.
   pub fn toggle_interpolation(&mut self, index: usize) -> Result<(), EditorError> {
     let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;

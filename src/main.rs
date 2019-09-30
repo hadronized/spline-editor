@@ -31,6 +31,8 @@ fn main() {
 
   // misc
   let mut cursor_pos: Option<[f32; 2]> = None;
+  let mut cursor_pressed_pos: Option<[f32; 2]> = None;
+  let mut mouse_left_pressed = false;
 
   let point_program = Program::<Semantics, (), ()>::from_strings(None, POINT_VS_SRC, POINT_GS_SRC, POINT_FS_SRC)
     .expect("shader program")
@@ -39,7 +41,6 @@ fn main() {
     .expect("shader program")
     .ignore_warnings();
 
-  let mut mouse_left_pressed = false;
 
   'app: loop {
     // event handling
@@ -73,20 +74,24 @@ fn main() {
         }
 
         WindowEvent::MouseButton(MouseButton::Button1, Action::Release, _) => {
-          mouse_left_pressed = false;
-
           if !editor.is_selecting() {
             if let Some([x, y]) = cursor_pos {
-              editor.add_point(ScreenPos::new(x, y), Interpolation::Cosine);
+              if cursor_pressed_pos == cursor_pos {
+                editor.add_point(ScreenPos::new(x, y), Interpolation::Cosine);
+              }
             }
           }
+
+          mouse_left_pressed = false;
+          cursor_pressed_pos = None;
+
         }
 
         WindowEvent::MouseButton(MouseButton::Button1, Action::Press, _) => {
           mouse_left_pressed = true;
-        }
+          cursor_pressed_pos = cursor_pos;
 
-        WindowEvent::MouseButton(MouseButton::Button2, Action::Release, _) => {
+          // try to select something at the current cursor, if any
           if let Some([x, y]) = cursor_pos {
             let _ = editor.select(ScreenPos::new(x, y));
           }
