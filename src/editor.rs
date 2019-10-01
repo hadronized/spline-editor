@@ -39,7 +39,9 @@ impl Editor {
 
   /// Rebuild tessellation based on control points for lines.
   fn build_lines<C>(&mut self, ctx: &mut C) -> Result<(), EditorError> where C: GraphicsContext {
-    let mut vertices = Vec::new();
+    let mut vertices = Vec::new(); // vertices making the lines
+    let mut indices = Vec::new(); // indexed lines
+    let mut index = 0u32;
     let keys = self.spline.keys();
 
     if !keys.is_empty() {
@@ -56,6 +58,9 @@ impl Editor {
         }
 
         vertices.push(LineVertex::new(VPos::new(p.into())));
+        indices.push(index);
+
+        index += 1;
         t += DELTA_T;
       }
 
@@ -63,11 +68,19 @@ impl Editor {
       if let Some(key) = self.spline.keys().last() {
         vertices.push(LineVertex::new(VPos::new(key.value.into())));
       }
+
+      //// iterate over all Bézier keys to generate their handles
+      //for key in keys {
+      //  if let Interpolation::Bezier(ref u) = key.interpolation {
+
+      //  }
+      //}
     }
 
     self.lines = TessBuilder::new(ctx)
       .set_mode(Mode::LineStrip)
       .add_vertices(vertices)
+      .set_indices(indices)
       .build()
       .map_err(EditorError::TessError)?;
 
@@ -98,21 +111,25 @@ impl Editor {
 
         vertices.push(vertex);
 
-        if let Interpolation::Bezier(u) = cp.interpolation {
-          let mut vertex = PointVertex::new(
-            VPos::new(u.into()),
-            VColor::new([0.5, 1., 0.5]),
-            VRadius::new(0.015 / 2.)
-          );
+        if let Interpolation::Bezier(mut u) = cp.interpolation {
+          for _ in 0..2 {
+            let mut vertex = PointVertex::new(
+              VPos::new(u.into()),
+              VColor::new([0.5, 1., 0.5]),
+              VRadius::new(0.015 / 2.)
+            );
 
-          if let Some(Selection::Handle(i_sel, _)) = self.selection {
-            if i_sel == i {
-              vertex.1 = VColor::new([1., 0.5, 0.5]);
-              vertex.2 = VRadius::new(0.015 / 2.);
+            if let Some(Selection::Handle(i_sel, _)) = self.selection {
+              if i_sel == i {
+                vertex.1 = VColor::new([1., 0.5, 0.5]);
+                vertex.2 = VRadius::new(0.015 / 2.);
+              }
             }
-          }
 
-          specials.push(vertex);
+            specials.push(vertex);
+
+            u = 2. * cp.value - u;
+          }
         }
       }
     }
