@@ -58,7 +58,7 @@ impl Editor {
           p.x = t;
         }
 
-        vertices.push(LineVertex::new(VPos::new(p.into())));
+        vertices.push(LineVertex::new(VPos::new(p.into()), VColor::new([0.5, 0.5, 1.])));
         indices.push(index);
 
         index += 1;
@@ -67,7 +67,7 @@ impl Editor {
 
       // add the last key
       if let Some(key) = self.spline.keys().last() {
-        vertices.push(LineVertex::new(VPos::new(key.value.into())));
+        vertices.push(LineVertex::new(VPos::new(key.value.into()), VColor::new([0.5, 0.5, 1.])));
         index += 1;
       }
 
@@ -76,8 +76,8 @@ impl Editor {
         if let Interpolation::Bezier(u) = key.interpolation {
           let v = 2. * key.value - u;
 
-          vertices.push(LineVertex::new(VPos::new(u.into())));
-          vertices.push(LineVertex::new(VPos::new(v.into())));
+          vertices.push(LineVertex::new(VPos::new(u.into()), VColor::new([0.4, 0.4, 0.4])));
+          vertices.push(LineVertex::new(VPos::new(v.into()), VColor::new([0.4, 0.4, 0.4])));
 
           // if it’s a Bézier, we have three points: the actual key point and its handle
           indices.push(PRIM_RESTART_INDEX);

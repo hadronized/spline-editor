@@ -12,7 +12,7 @@ pub enum Semantics {
 #[derive(Clone, Debug, Vertex)]
 #[vertex(sem = "Semantics")]
 #[repr(C)]
-pub struct LineVertex(VPos);
+pub struct LineVertex(pub VPos, pub VColor);
 
 #[derive(Clone, Debug, Vertex)]
 #[vertex(sem = "Semantics")]
