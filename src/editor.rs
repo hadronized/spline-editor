@@ -176,7 +176,12 @@ impl Editor {
 
   /// Move a point.
   pub fn move_key(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
-    let key = self.spline.remove(index).ok_or_else(|| EditorError::UnknownKey(index))?;
+    let mut key = self.spline.remove(index).ok_or_else(|| EditorError::UnknownKey(index))?;
+
+    // move along interpolation handle if any
+    if let Interpolation::Bezier(ref mut h) = key.interpolation {
+      *h += p - key.value;
+    }
 
     self.spline.add(Key::new(p[0], p, key.interpolation));
     self.rebuild_tess = true;
@@ -185,11 +190,26 @@ impl Editor {
   }
 
   /// Move a handle of a point.
-  pub fn move_handle(&mut self, index: usize, p: ScreenPos) -> Result<(), EditorError> {
+  pub fn move_handle(
+    &mut self,
+    index: usize,
+    p: ScreenPos,
+    handle_selection: HandleSelection
+  ) -> Result<(), EditorError> {
     let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
 
     if let Interpolation::Bezier(ref mut handle) = *key.interpolation {
-      *handle = p;
+      match handle_selection {
+        HandleSelection::Own => {
+          *handle = p;
+        }
+
+        HandleSelection::Mirror => {
+          // recompute the position by symetrically rotate it
+          *handle = 2. * *key.value - p;
+        }
+      }
+
       self.rebuild_tess = true;
 
       Ok(())
@@ -258,9 +278,9 @@ impl Editor {
 
           _ => ()
         }
-      } else if let Interpolation::Bezier(ref handle) = p.interpolation {
+      } else if let Interpolation::Bezier(handle) = p.interpolation {
         // try to select a handle
-        let [px, py]: [f32; 2] = (*handle).into();
+        let [px, py]: [f32; 2] = handle.into();
         let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
 
         if dist <= POINT_SELECTION_DIST {
@@ -271,6 +291,23 @@ impl Editor {
 
             None => {
               found = Some((Selection::Handle(i, HandleSelection::Own), dist));
+            }
+
+            _ => ()
+          }
+        }
+
+        let [px, py]: [f32; 2] = (2. * p.value - handle).into();
+        let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
+
+        if dist <= POINT_SELECTION_DIST {
+          match found {
+            Some((_, prev_dist)) if dist < prev_dist => {
+              found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
+            }
+
+            None => {
+              found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
             }
 
             _ => ()

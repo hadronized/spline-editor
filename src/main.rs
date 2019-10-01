@@ -65,8 +65,8 @@ fn main() {
                   editor.move_key(i, p).unwrap();
                 }
 
-                Selection::Handle(i, _) => {
-                  editor.move_handle(i, p).unwrap();
+                Selection::Handle(i, h) => {
+                  editor.move_handle(i, p, h).unwrap();
                 }
               }
             }
