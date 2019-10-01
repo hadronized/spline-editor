@@ -42,6 +42,7 @@ impl Editor {
     let mut vertices = Vec::new(); // vertices making the lines
     let mut indices = Vec::new(); // indexed lines
     let mut index = 0u32;
+    const PRIM_RESTART_INDEX: u32 = u32::max_value();
     let keys = self.spline.keys();
 
     if !keys.is_empty() {
@@ -67,20 +68,32 @@ impl Editor {
       // add the last key
       if let Some(key) = self.spline.keys().last() {
         vertices.push(LineVertex::new(VPos::new(key.value.into())));
+        index += 1;
       }
 
-      //// iterate over all Bézier keys to generate their handles
-      //for key in keys {
-      //  if let Interpolation::Bezier(ref u) = key.interpolation {
+      // iterate over all Bézier keys to generate their handles
+      for key in keys {
+        if let Interpolation::Bezier(u) = key.interpolation {
+          let v = 2. * key.value - u;
 
-      //  }
-      //}
+          vertices.push(LineVertex::new(VPos::new(u.into())));
+          vertices.push(LineVertex::new(VPos::new(v.into())));
+
+          // if it’s a Bézier, we have three points: the actual key point and its handle
+          indices.push(PRIM_RESTART_INDEX);
+          indices.push(index);
+          indices.push(index + 1);
+
+          index += 2;
+        }
+      }
     }
 
     self.lines = TessBuilder::new(ctx)
       .set_mode(Mode::LineStrip)
       .add_vertices(vertices)
       .set_indices(indices)
+      .set_primitive_restart_index(Some(u32::max_value()))
       .build()
       .map_err(EditorError::TessError)?;
 
@@ -112,7 +125,7 @@ impl Editor {
         vertices.push(vertex);
 
         if let Interpolation::Bezier(mut u) = cp.interpolation {
-          for _ in 0..2 {
+          for _ in 0 .. 2 {
             let mut vertex = PointVertex::new(
               VPos::new(u.into()),
               VColor::new([0.5, 1., 0.5]),
