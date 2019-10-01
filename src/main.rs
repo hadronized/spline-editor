@@ -96,6 +96,10 @@ fn main() {
           }
         }
 
+        WindowEvent::MouseButton(MouseButton::Button2, Action::Release, _) => {
+          editor.deselect();
+        }
+
         WindowEvent::Key(GKey::Backspace, _, Action::Release, _) => {
           if let Some(i) = editor.selected_point() {
             let _ = editor.remove_point(i);

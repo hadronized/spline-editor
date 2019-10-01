@@ -46,7 +46,6 @@ impl Editor {
       let up_t = keys.last().unwrap().t;
       let mut t = keys[0].t;
 
-      let mut i = 0;
       while t < up_t {
         let (mut p, key, _) = self.spline.clamped_sample_with_key(t).unwrap();
 
@@ -58,7 +57,6 @@ impl Editor {
 
         vertices.push(LineVertex::new(VPos::new(p.into())));
         t += DELTA_T;
-        i += 1;
       }
 
       // add the last key
