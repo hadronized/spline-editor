@@ -9,4 +9,4 @@ cgmath = "0.17"
 luminance = "0.37"
 luminance-derive = "0.5"
 luminance-glfw = "0.11"
-splines = { version = "2", features = ["impl-cgmath"] }
+splines = { version = "3", features = ["impl-cgmath"] }

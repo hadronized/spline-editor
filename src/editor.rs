@@ -73,18 +73,34 @@ impl Editor {
 
       // iterate over all Bézier keys to generate their handles
       for key in keys {
-        if let Interpolation::Bezier(u) = key.interpolation {
-          let v = 2. * key.value - u;
+        match key.interpolation {
+          Interpolation::Bezier(u) => {
+            let v = 2. * key.value - u;
 
-          vertices.push(LineVertex::new(VPos::new(u.into()), VColor::new([0.4, 0.4, 0.4])));
-          vertices.push(LineVertex::new(VPos::new(v.into()), VColor::new([0.4, 0.4, 0.4])));
+            vertices.push(LineVertex::new(VPos::new(u.into()), VColor::new([0.4, 0.4, 0.4])));
+            vertices.push(LineVertex::new(VPos::new(v.into()), VColor::new([0.4, 0.4, 0.4])));
 
-          // if it’s a Bézier, we have three points: the actual key point and its handle
-          indices.push(PRIM_RESTART_INDEX);
-          indices.push(index);
-          indices.push(index + 1);
+            indices.push(PRIM_RESTART_INDEX);
+            indices.push(index);
+            indices.push(index + 1);
 
-          index += 2;
+            index += 2;
+          }
+
+          Interpolation::StrokeBezier(input, output) => {
+            vertices.push(LineVertex::new(VPos::new(input.into()), VColor::new([0.4, 0.4, 0.4])));
+            vertices.push(LineVertex::new(VPos::new(key.value.into()), VColor::new([0.4, 0.4, 0.4])));
+            vertices.push(LineVertex::new(VPos::new(output.into()), VColor::new([0.4, 0.4, 0.4])));
+
+            indices.push(PRIM_RESTART_INDEX);
+            indices.push(index);
+            indices.push(index + 1);
+            indices.push(index + 2);
+
+            index += 3;
+          }
+
+          _ => ()
         }
       }
     }
@@ -124,15 +140,37 @@ impl Editor {
 
         vertices.push(vertex);
 
-        if let Interpolation::Bezier(mut u) = cp.interpolation {
-          for _ in 0 .. 2 {
+        match cp.interpolation {
+          Interpolation::Bezier(mut u) => {
+            for _ in 0 .. 2 {
+              let mut vertex = PointVertex::new(
+                VPos::new(u.into()),
+                VColor::new([0.5, 1., 0.5]),
+                VRadius::new(0.015 / 2.)
+              );
+
+              if let Some(Selection::Handle(i_sel, _)) = self.selection {
+                if i_sel == i {
+                  vertex.1 = VColor::new([1., 0.5, 0.5]);
+                  vertex.2 = VRadius::new(0.015 / 2.);
+                }
+              }
+
+              specials.push(vertex);
+
+              u = 2. * cp.value - u;
+            }
+          }
+
+          Interpolation::StrokeBezier(input, output) => {
+            // input
             let mut vertex = PointVertex::new(
-              VPos::new(u.into()),
+              VPos::new(input.into()),
               VColor::new([0.5, 1., 0.5]),
               VRadius::new(0.015 / 2.)
             );
 
-            if let Some(Selection::Handle(i_sel, _)) = self.selection {
+            if let Some(Selection::Handle(i_sel, HandleSelection::Own)) = self.selection {
               if i_sel == i {
                 vertex.1 = VColor::new([1., 0.5, 0.5]);
                 vertex.2 = VRadius::new(0.015 / 2.);
@@ -141,8 +179,24 @@ impl Editor {
 
             specials.push(vertex);
 
-            u = 2. * cp.value - u;
+            // input
+            let mut vertex = PointVertex::new(
+              VPos::new(output.into()),
+              VColor::new([0.5, 1., 0.5]),
+              VRadius::new(0.015 / 2.)
+            );
+
+            if let Some(Selection::Handle(i_sel, HandleSelection::Mirror)) = self.selection {
+              if i_sel == i {
+                vertex.1 = VColor::new([1., 0.5, 0.5]);
+                vertex.2 = VRadius::new(0.015 / 2.);
+              }
+            }
+
+            specials.push(vertex);
           }
+
+          _ => ()
         }
       }
     }
@@ -198,23 +252,39 @@ impl Editor {
   ) -> Result<(), EditorError> {
     let key = self.spline.get_mut(index).ok_or_else(|| EditorError::UnknownKey(index))?;
 
-    if let Interpolation::Bezier(ref mut handle) = *key.interpolation {
-      match handle_selection {
-        HandleSelection::Own => {
-          *handle = p;
+    match *key.interpolation {
+      Interpolation::Bezier(ref mut handle) => {
+        match handle_selection {
+          HandleSelection::Own => {
+            *handle = p;
+          }
+
+          HandleSelection::Mirror => {
+            // recompute the position by symetrically rotate it
+            *handle = 2. * *key.value - p;
+          }
         }
 
-        HandleSelection::Mirror => {
-          // recompute the position by symetrically rotate it
-          *handle = 2. * *key.value - p;
-        }
+        self.rebuild_tess = true;
+        Ok(())
       }
 
-      self.rebuild_tess = true;
+      Interpolation::StrokeBezier(ref mut input, ref mut output) => {
+        match handle_selection {
+          HandleSelection::Own => {
+            *input = p;
+          }
 
-      Ok(())
-    } else {
-      Err(EditorError::WrongInterpolationAssumed(index))
+          HandleSelection::Mirror => {
+            *output = p;
+          }
+        }
+
+        self.rebuild_tess = true;
+        Ok (())
+      }
+
+      _ => Err(EditorError::WrongInterpolationAssumed(index))
     }
   }
 
@@ -278,40 +348,83 @@ impl Editor {
 
           _ => ()
         }
-      } else if let Interpolation::Bezier(handle) = p.interpolation {
-        // try to select a handle
-        let [px, py]: [f32; 2] = handle.into();
-        let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
+      } else {
+        match p.interpolation {
+          Interpolation::Bezier(handle) => {
+            // try to select a handle
+            let [px, py]: [f32; 2] = handle.into();
+            let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
 
-        if dist <= POINT_SELECTION_DIST {
-          match found {
-            Some((_, prev_dist)) if dist < prev_dist => {
-              found = Some((Selection::Handle(i, HandleSelection::Own), dist));
+            if dist <= POINT_SELECTION_DIST {
+              match found {
+                Some((_, prev_dist)) if dist < prev_dist => {
+                  found = Some((Selection::Handle(i, HandleSelection::Own), dist));
+                }
+
+                None => {
+                  found = Some((Selection::Handle(i, HandleSelection::Own), dist));
+                }
+
+                _ => ()
+              }
             }
 
-            None => {
-              found = Some((Selection::Handle(i, HandleSelection::Own), dist));
-            }
+            let [px, py]: [f32; 2] = (2. * p.value - handle).into();
+            let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
 
-            _ => ()
+            if dist <= POINT_SELECTION_DIST {
+              match found {
+                Some((_, prev_dist)) if dist < prev_dist => {
+                  found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
+                }
+
+                None => {
+                  found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
+                }
+
+                _ => ()
+              }
+            }
           }
-        }
 
-        let [px, py]: [f32; 2] = (2. * p.value - handle).into();
-        let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
+          Interpolation::StrokeBezier(input, output) => {
+            // try to select the input handle
+            let [px, py]: [f32; 2] = input.into();
+            let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
 
-        if dist <= POINT_SELECTION_DIST {
-          match found {
-            Some((_, prev_dist)) if dist < prev_dist => {
-              found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
+            if dist <= POINT_SELECTION_DIST {
+              match found {
+                Some((_, prev_dist)) if dist < prev_dist => {
+                  found = Some((Selection::Handle(i, HandleSelection::Own), dist));
+                }
+
+                None => {
+                  found = Some((Selection::Handle(i, HandleSelection::Own), dist));
+                }
+
+                _ => ()
+              }
             }
 
-            None => {
-              found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
-            }
+            let [px, py]: [f32; 2] = output.into();
+            let dist = ((x - px).powf(2.) + (y - py).powf(2.)).sqrt();
 
-            _ => ()
+            if dist <= POINT_SELECTION_DIST {
+              match found {
+                Some((_, prev_dist)) if dist < prev_dist => {
+                  found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
+                }
+
+                None => {
+                  found = Some((Selection::Handle(i, HandleSelection::Mirror), dist));
+                }
+
+                _ => ()
+              }
+            }
           }
+
+          _ => ()
         }
       }
     }
@@ -359,7 +472,8 @@ impl Editor {
       Interpolation::Step(_) => Interpolation::Linear,
       Interpolation::Linear => Interpolation::Cosine,
       Interpolation::Cosine => Interpolation::Bezier(p + ScreenPos::new(0.1, 0.1)),
-      Interpolation::Bezier(_) => Interpolation::Step(0.5),
+      Interpolation::Bezier(_) => Interpolation::StrokeBezier(p - ScreenPos::new(0.1, 0.1), p + ScreenPos::new(0.1, 0.1)),
+      Interpolation::StrokeBezier(..) => Interpolation::Step(0.5),
       _ => i
     }
   }
