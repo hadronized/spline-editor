@@ -4,15 +4,20 @@
 mod editor;
 mod vertex;
 
-use luminance::blending::{Equation, Factor};
-use luminance::context::GraphicsContext;
-use luminance::render_state::RenderState;
-use luminance::shader::program::Program;
-use luminance_glfw::{Action, GlfwSurface, Key as GKey, MouseButton, Surface, WindowDim, WindowEvent, WindowOpt};
+use crate::{
+  editor::{Editor, ScreenPos, Selection},
+  vertex::Semantics,
+};
+use glfw::{Action, Context as _, Key, MouseButton, WindowEvent};
+use luminance::{
+  blending::{Blending, Equation, Factor},
+  context::GraphicsContext,
+  pipeline::PipelineState,
+  render_state::RenderState,
+};
+use luminance_glfw::GlfwSurface;
+use luminance_windowing::WindowOpt;
 use splines::Interpolation;
-
-use crate::editor::{Editor, Selection, ScreenPos};
-use crate::vertex::Semantics;
 
 const LINE_VS_SRC: &str = include_str!("vs.glsl");
 const LINE_FS_SRC: &str = include_str!("fs.glsl");
@@ -24,8 +29,8 @@ const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 800;
 
 fn main() {
-  let mut surface = GlfwSurface::new(WindowDim::Windowed(WINDOW_WIDTH, WINDOW_HEIGHT), "spline editor", WindowOpt::default())
-    .expect("create surface");
+  let mut surface =
+    GlfwSurface::new_gl33("spline editor", WindowOpt::default()).expect("create surface");
 
   let mut editor = Editor::new(&mut surface);
 
@@ -34,26 +39,34 @@ fn main() {
   let mut cursor_pressed_pos: Option<[f32; 2]> = None;
   let mut mouse_left_pressed = false;
 
-  let point_program = Program::<Semantics, (), ()>::from_strings(None, POINT_VS_SRC, POINT_GS_SRC, POINT_FS_SRC)
-    .expect("shader program")
-    .ignore_warnings();
-  let line_program = Program::<Semantics, (), ()>::from_strings(None, LINE_VS_SRC, None, LINE_FS_SRC)
+  let mut point_program = surface
+    .new_shader_program::<Semantics, (), ()>()
+    .from_strings(POINT_VS_SRC, None, POINT_GS_SRC, POINT_FS_SRC)
     .expect("shader program")
     .ignore_warnings();
 
+  let mut line_program = surface
+    .new_shader_program::<Semantics, (), ()>()
+    .from_strings(LINE_VS_SRC, None, None, LINE_FS_SRC)
+    .expect("shader program")
+    .ignore_warnings();
 
   'app: loop {
     // event handling
-    for event in surface.poll_events() {
+    surface.window.glfw.poll_events();
+    for (_, event) in glfw::flush_messages(&surface.events_rx) {
       match event {
-        WindowEvent::Close | WindowEvent::Key(GKey::Escape, _, Action::Release, _) => break 'app,
+        WindowEvent::Close | WindowEvent::Key(Key::Escape, _, Action::Release, _) => break 'app,
 
         WindowEvent::FramebufferSize(w, h) => {
           println!("new framebuffer dimensions: {}×{}", w, h);
         }
 
         WindowEvent::CursorPos(x, y) => {
-          let xy = [x as f32 / WINDOW_WIDTH as f32, 1. - 2. * y as f32 / WINDOW_HEIGHT as f32];
+          let xy = [
+            x as f32 / WINDOW_WIDTH as f32,
+            1. - 2. * y as f32 / WINDOW_HEIGHT as f32,
+          ];
           cursor_pos = Some(xy);
 
           if mouse_left_pressed {
@@ -100,19 +113,19 @@ fn main() {
           editor.deselect();
         }
 
-        WindowEvent::Key(GKey::Backspace, _, Action::Release, _) => {
+        WindowEvent::Key(Key::Backspace, _, Action::Release, _) => {
           if let Some(i) = editor.selected_point() {
             let _ = editor.remove_point(i);
           }
         }
 
-        WindowEvent::Key(GKey::Space, _, Action::Release, _) => {
+        WindowEvent::Key(Key::Space, _, Action::Release, _) => {
           if let Some(i) = editor.selected_point() {
             let _ = editor.toggle_interpolation(i);
           }
         }
 
-        _ => ()
+        _ => (),
       }
     }
 
@@ -120,26 +133,38 @@ fn main() {
 
     // render
     let back_buffer = surface.back_buffer().unwrap();
+    let pipeline_state = PipelineState::default();
     let render_state = RenderState::default()
-      .set_blending(Some((Equation::Additive, Factor::SrcAlpha, Factor::SrcAlphaComplement)))
+      .set_blending(Blending {
+        equation: Equation::Additive,
+        src: Factor::SrcAlpha,
+        dst: Factor::SrcAlphaComplement,
+      })
       .set_depth_test(None);
 
-    surface.pipeline_builder().pipeline(&back_buffer, [0., 0., 0., 0.], |_, mut shd_gate| {
-      // lines
-      shd_gate.shade(&line_program, |_, mut rdr_gate| {
-        rdr_gate.render(render_state, |mut tess_gate| {
-            tess_gate.render(editor.lines());
-        });
-      });
+    let render = surface
+      .new_pipeline_gate()
+      .pipeline(&back_buffer, &pipeline_state, |_, mut shd_gate| {
+        // lines
+        shd_gate.shade(&mut line_program, |_, _, mut rdr_gate| {
+          rdr_gate.render(&render_state, |mut tess_gate| {
+            tess_gate.render(editor.lines())
+          })
+        })?;
 
-      // points
-      shd_gate.shade(&point_program, |_, mut rdr_gate| {
-        rdr_gate.render(render_state, |mut tess_gate| {
-            tess_gate.render(editor.points());
-        });
-      });
-    });
+        // points
+        shd_gate.shade(&mut point_program, |_, _, mut rdr_gate| {
+          rdr_gate.render(&render_state, |mut tess_gate| {
+            tess_gate.render(editor.points())
+          })
+        })
+      })
+      .assume();
 
-    surface.swap_buffers();
+    if render.is_ok() {
+      surface.window.swap_buffers();
+    } else {
+      break;
+    }
   }
 }

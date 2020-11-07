@@ -6,7 +6,10 @@ edition = "2018"
 
 [dependencies]
 cgmath = "0.17"
-luminance = "0.37"
-luminance-derive = "0.5"
-luminance-glfw = "0.11"
-splines = { version = "3", features = ["impl-cgmath"] }
+luminance = "0.43.1"
+luminance-derive = "0.6.3"
+luminance-front = "0.3.1"
+luminance-glfw = "0.14.2"
+luminance-windowing = "0.9.3"
+glfw = "0.40"
+splines = { version = "3.4.2", features = ["impl-cgmath"] }

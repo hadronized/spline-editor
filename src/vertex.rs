@@ -1,4 +1,4 @@
-use luminance_derive::{Vertex, Semantics};
+use luminance_derive::{Semantics, Vertex};
 #[derive(Copy, Clone, Debug, Semantics)]
 pub enum Semantics {
   #[sem(name = "position", repr = "[f32; 2]", wrapper = "VPos")]
@@ -9,12 +9,12 @@ pub enum Semantics {
   Color,
 }
 
-#[derive(Clone, Debug, Vertex)]
+#[derive(Clone, Copy, Debug, Vertex)]
 #[vertex(sem = "Semantics")]
 #[repr(C)]
 pub struct LineVertex(pub VPos, pub VColor);
 
-#[derive(Clone, Debug, Vertex)]
+#[derive(Clone, Copy, Debug, Vertex)]
 #[vertex(sem = "Semantics")]
 #[repr(C)]
 pub struct PointVertex(pub VPos, pub VColor, pub VRadius);
