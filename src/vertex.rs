@@ -1,4 +1,4 @@
-use luminance_derive::{Semantics, Vertex};
+use luminance::{Semantics, Vertex};
 #[derive(Copy, Clone, Debug, Semantics)]
 pub enum Semantics {
   #[sem(name = "position", repr = "[f32; 2]", wrapper = "VPos")]

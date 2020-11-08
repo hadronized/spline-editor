@@ -7,7 +7,6 @@ edition = "2018"
 [dependencies]
 cgmath = "0.17"
 luminance = "0.43.1"
-luminance-derive = "0.6.3"
 luminance-front = "0.3.1"
 luminance-glfw = "0.14.2"
 luminance-windowing = "0.9.3"

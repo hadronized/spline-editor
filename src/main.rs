@@ -25,9 +25,6 @@ const POINT_VS_SRC: &str = include_str!("point_vs.glsl");
 const POINT_GS_SRC: &str = include_str!("point_gs.glsl");
 const POINT_FS_SRC: &str = include_str!("point_fs.glsl");
 
-const WINDOW_WIDTH: u32 = 800;
-const WINDOW_HEIGHT: u32 = 800;
-
 fn main() {
   let mut surface =
     GlfwSurface::new_gl33("spline editor", WindowOpt::default()).expect("create surface");
@@ -52,6 +49,8 @@ fn main() {
     .ignore_warnings();
 
   'app: loop {
+    let (fb_width, fb_height) = surface.window.get_framebuffer_size();
+
     // event handling
     surface.window.glfw.poll_events();
     for (_, event) in glfw::flush_messages(&surface.events_rx) {
@@ -64,8 +63,8 @@ fn main() {
 
         WindowEvent::CursorPos(x, y) => {
           let xy = [
-            x as f32 / WINDOW_WIDTH as f32,
-            1. - 2. * y as f32 / WINDOW_HEIGHT as f32,
+            x as f32 / fb_width as f32,
+            1. - 2. * y as f32 / fb_height as f32,
           ];
           cursor_pos = Some(xy);
 
